@@ -1,0 +1,205 @@
+{% assign bab_parts = page.title | split: " " %}
+{% assign bab_number = bab_parts[1] | plus: 0 %}
+{% assign current_bab = bab_number %}
+
+{% if current_bab > 0 and current_bab > 5 and current_bab % 5 == 1 %}
+  <pre id="chapter-content" class="prose overflow-auto whitespace-pre-wrap break-words prose-invert prose-pre:bg-zinc-900 prose-pre:text-green-400 prose-pre:rounded-md prose-pre:font-mono prose-pre:text-sm prose-pre:px-4 prose-pre:py-3 max-w-none leading-relaxed text-wrap hidden"></pre>
+<div id="locked-up" class="prose overflow-auto whitespace-pre-wrap break-words prose-invert prose-pre:bg-zinc-900 prose-pre:text-green-400 prose-pre:rounded-md prose-pre:font-mono prose-pre:text-sm prose-pre:px-4 prose-pre:py-3 max-w-none leading-relaxed text-wrap">
+<pre id="locked" class="bg-gray-900 rounded-md mb-2 p-2 text-wrap">
+<p class="text-red-500">LOCKED: Bab ini belum diaktifkan.</p>
+<p class="text-green-600">daffa@kenclengd-Mint:~/token/access$ gunakan-token-verifikasi-untuk-membuka.</p>
+</pre>
+
+Ia mencoba mengetik sesuatu… apapun… `--force`, `--override`, bahkan `--help`. Tapi sistem hanya merespons dengan satu suara, berat dan familiar:
+
+> "Untuk membuka fragmen ini, kamu harus mengingat sesuatu yang bukan milikmu."
+
+---
+
+```
+[ Masukkan Token Aktivasi: __________ ]
+[ UNLOCK ]
+```
+
+Setiap percobaan salah memunculkan kode error yang semakin aneh:
+
+* `Error 403: This token is tied to a timeline you never lived.`
+* `Error 429: Too many resurrections.`
+* `Error 102: Memory clash — too early.`
+
+---
+</div>
+<!-- LOCK OVERLAY (JS-controlled) -->
+<div id="locked-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center hidden">
+  <div class="text-center text-zinc-200 space-y-6">
+    <h1 class="text-2xl font-semibold">Buka Bab Terkunci</h1>
+    <div id="token-section">
+      <p class="text-sm mb-2 text-zinc-400">Bikin nama unik dulu.</p>
+      <input id="nickname" placeholder="--uniquename=[....]" class="px-4 py-2 my-4" />
+      <p class="text-sm mb-2 mt-4 text-zinc-400">Masukkan token aktivasi yang kamu dapat.</p>
+      <input id="unlock-token" type="text" placeholder="--accesstoken=[....]" class="px-4 py-2 my-4">
+      <div><button id="unlock-btn" class="cursor-pointer text-green-600 mt-4 mb-4">Aktifkan</button></div>
+      <p id="unlock-msg" class="text-xs text-rose-400 hidden">Token salah atau tidak dikenal.</p>
+      <button onclick="giveUp()" class="cursor-pointer text-gray-600 mt-4">Menyerah & dukung cerita</button>
+    </div>    
+    <div id="donation-section" class="hidden grid gap-8">
+      <button id="snap-pay" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded">
+        Donasi & Buka Bab
+      </button>
+      <button onclick="backToToken()" class="cursor-pointer text-xs underline text-zinc-500 hover:text-zinc-300 mb-2">Kembali</button>
+      <div id="snap-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Script Unlock -->
+<script>
+const API_URL = "https://kenclengd.androidbutut.workers.dev";
+const currentBab = parseInt(location.pathname.match(/bab\/(\d+)/)?.[1] || "0");
+const overlay = document.getElementById("locked-overlay");
+const contentEl = document.getElementById("chapter-content");
+const unlockMsg = document.getElementById("unlock-msg");
+const lockOverlay = document.getElementById("locked-up");
+
+const nicknameInput = document.getElementById("nickname");
+const tokenInput = document.getElementById("unlock-token");
+
+// Auto isi nickname dari localStorage kalau ada
+nicknameInput.value = localStorage.getItem("nickname") || "";
+
+// Cek apakah bab sudah unlocked oleh nickname
+checkUnlock();
+
+async function checkUnlock() {
+  const nickname = nicknameInput.value || localStorage.getItem("nickname");
+  if (!nickname) {
+    overlay.classList.remove("hidden");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/check?bab=${currentBab}&name=${encodeURIComponent(nickname)}`);
+    const { unlocked } = await res.json();
+    if (unlocked) {
+      loadBabContent();
+      lockOverlay.classList.add("hidden");
+    } else {
+      overlay.classList.remove("hidden");
+      lockOverlay.classList.remove("hidden");
+    }
+  } catch (err) {
+    console.error("Gagal cek unlock:", err);
+    overlay.classList.remove("hidden");
+  }
+}
+
+// Load isi bab kalau sudah unlock
+async function loadBabContent() {
+  const contentEl = document.getElementById("chapter-content");
+  const overlay = document.getElementById("locked-overlay");
+  const lockOverlay = document.getElementById("locked-up");
+
+  if (!contentEl || !lockOverlay) {
+    console.error("#html tidak ditemukan.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/bab/${currentBab}`);
+    const raw = await res.text();
+
+    contentEl.innerHTML = marked.parse(raw);
+    contentEl.classList.remove("hidden");
+    lockOverlay.classList.add("hidden");
+    overlay?.classList.add("hidden");
+  } catch (err) {
+    console.error("Gagal load bab:", err);
+  }
+}
+
+// Submit unlock dengan token + nama unik
+document.getElementById("unlock-btn").addEventListener("click", async () => {
+  const nickname = nicknameInput.value.trim();
+  const token = tokenInput.value.trim();
+  if (!nickname || !token) return;
+
+  try {
+    const res = await fetch(`${API_URL}/unlock`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: nickname, token }),
+    });
+
+    if (res.ok) {
+      localStorage.setItem("nickname", nickname);
+      unlockMsg.classList.add("hidden");
+      await checkUnlock();
+    } else {
+      unlockMsg.classList.remove("hidden");
+    }
+  } catch (err) {
+    console.error("Gagal unlock:", err);
+    unlockMsg.classList.remove("hidden");
+  }
+});
+
+function giveUp() {
+  document.getElementById("token-section").classList.add("hidden");
+  document.getElementById("donation-section").classList.remove("hidden");
+}
+
+document.getElementById("snap-pay").addEventListener("click", async () => {
+  const uid = localStorage.getItem("uid") || generateAnonId();
+  const paket = "suporter";
+
+  try {
+    const res = await fetch(`${API_URL}/create-transaction`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uid, paket })
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Backend error response:", errorText);
+      alert(`Gagal membuat transaksi: ${errorText}`);
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.snapToken) {
+      window.snap.pay(data.snapToken, {
+        onSuccess: function (result) {
+          alert("Transaksi berhasil! Silakan cek ulang bab.");
+          window.location.reload();
+        },
+        onPending: function (result) {
+          alert("Transaksi belum selesai.");
+        },
+        onError: function (result) {
+          alert("Terjadi kesalahan saat memproses pembayaran.");
+        }
+      });
+    } else {
+      console.error("Transaksi gagal: snapToken tidak ditemukan", data);
+      alert("Gagal membuat transaksi: snapToken tidak valid.");
+    }
+  } catch (err) {
+    console.error("Network or parsing error:", err);
+    alert("Terjadi kesalahan jaringan atau respons tidak dapat diproses.");
+  }
+});
+
+function generateAnonId() {
+  const id = "anon-" + Date.now();
+  localStorage.setItem("uid", id);
+  return id;
+}
+
+function backToToken() {
+  document.getElementById("donation-section").classList.add("hidden");
+  document.getElementById("token-section").classList.remove("hidden");
+}
+</script>
+{% endif %}

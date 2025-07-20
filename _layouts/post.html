@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: page.lang | default: 'id-ID' }}">
+
+  {% include head.html %}
+
+<body data-bab="{{ page.url | split: '/' | last | remove: '/' }}" class="bg-zinc-950 text-zinc-100 font-mono px-6 py-8 max-w-4xl w-full mx-auto scroll-smooth selection:bg-cyan-400 selection:text-zinc-900">
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const currentBab = parseInt(document.body.dataset.bab, 10);
+  console.log("currentBab", currentBab);
+});
+</script>
+  <!-- HEADER -->
+<header class="mb-6 border-b border-zinc-700 pb-2">
+  <a href="{{site.baseurl}}/" class="mb-4 hover:text-cyan-400">Home</a>
+  <h1 class="text-2xl text-cyan-400 mt-4 flex items-center gap-2">
+    <i class="fa-solid fa-terminal"></i>
+    {{ page.title }}
+    {% if page.title contains "Bab 6" %}
+      <span class="ml-2 flex gap-3 items-center text-yellow-400 text-xs font-semibold bg-yellow-900 px-2 py-0.5 rounded">🔒 Premium</span>
+    {% endif %}
+  </h1>
+  <p class="text-sm text-zinc-500">{{ page.date | date: "%d %b %Y" }}</p>
+</header>
+{% if page.url contains "/bab/6" %}
+  {% include locker.html %}
+{% endif %}
+  <!-- CONTENT -->
+  <article class="prose prose-invert prose-pre:bg-zinc-900 prose-pre:text-green-400 prose-pre:rounded-md prose-pre:font-mono prose-pre:text-sm prose-pre:px-4 prose-pre:py-3 max-w-none prose-pre:text-wrap overflow-auto whitespace-pre-wrap break-words leading-relaxed">
+      <img id="image-preview" src="" class="hidden rounded-lg mb-6 shadow-xl w-full max-w-3xl mx-auto" alt="Ilustrasi Bab" />
+    {{ content }}
+  </article>
+
+{% assign posts = site.posts | sort: "date" %}
+{% assign current_index = nil %}
+
+{% for post in posts %}
+  {% if post.url == page.url %}
+    {% assign current_index = forloop.index0 %}
+  {% endif %}
+{% endfor %}
+
+{% assign prev_index = current_index | minus: 1 %}
+{% assign next_index = current_index | plus: 1 %}
+
+{% assign prev_post = posts[prev_index] %}
+{% assign next_post = posts[next_index] %}
+
+<nav id="bab-nav" class="mt-12 flex justify-between items-center border-t border-zinc-700 pt-6 text-sm text-zinc-400">
+  {% if prev_index >= 0 %}
+    <a href="{{site.baseurl}}{{ prev_post.url }}" class="nav-link hover:text-cyan-400">
+      <i class="fa-solid fa-arrow-left mr-2"></i>{{ prev_post.title }}
+    </a>
+  {% else %}
+    <span></span>
+  {% endif %}
+
+  {% if next_index < posts.size %}
+    <a href="{{site.baseurl}}{{ next_post.url }}" class="nav-link hover:text-cyan-400">
+      {{ next_post.title }}<i class="fa-solid fa-arrow-right ml-2"></i>
+    </a>
+  {% else %}
+    <span></span>
+  {% endif %}
+</nav>
+
+  <!-- FOOTER -->
+  <footer class="mt-6 border-t border-zinc-800 pt-4 px-2 text-xs text-zinc-600 text-center">
+    <p>© 2037 <strong>L Y Я A</strong>. Powered by Jekyll, Cloudflare & Kencleng Protocol™</p>
+    <p class="mt-1"><i class="fa-solid fa-coins text-yellow-500"></i> Jika cerita ini menyentuh log RAM-mu, kencleng boleh kok 😁</p>
+  </footer>
+
+</body>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Animasi masuk konten
+  const article = document.querySelector('article');
+  if (article) {
+    gsap.from(article, {
+      opacity: 0,
+      y: 40,
+      duration: 0.6,
+      ease: "power2.out"
+    });
+  }
+
+  // Transisi keluar saat klik nav-link
+  const navLinks = document.querySelectorAll('.nav-link');
+  let isTransitioning = false;
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (isTransitioning) return;
+      isTransitioning = true;
+
+      const href = link.getAttribute('href');
+      if (!href) return;
+
+      gsap.to("body > *", {
+        opacity: 0,
+        y: -30,
+        duration: 0.4,
+        ease: "power2.in",
+        onComplete: () => {
+          window.location.href = href;
+        }
+      });
+    });
+  });
+});
+</script>
+</html>

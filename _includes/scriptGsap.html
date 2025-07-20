@@ -1,0 +1,86 @@
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof gsap === 'undefined') {
+        console.error("GSAP library not loaded!");
+        return;
+    }
+
+    const article = document.querySelector('article');
+    if (article) {
+        gsap.from(article, {
+            opacity: 0,
+            y: 40,
+            duration: 0.6,
+            ease: "power2.out"
+        });
+    }
+
+    const babList = document.querySelector('#bab-list');
+    if (babList) {
+        gsap.from("#bab-list a", {
+            opacity: 0,
+            y: 30,
+            stagger: 0.1,
+            duration: 0.5,
+            ease: "power2.out"
+        });
+    }
+
+    let isTransitioning = false;
+    const transitionLinks = document.querySelectorAll('.nav-link, .pagination-link');
+
+    transitionLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (isTransitioning) {
+                e.preventDefault();
+                return;
+            }
+            
+            e.preventDefault();
+            const href = this.getAttribute('href');
+            
+            if (href.startsWith('#')) {
+                window.location.href = href;
+                return;
+            }
+
+            isTransitioning = true; 
+
+            const transitionLayer = document.getElementById('page-transition');
+            
+            if (transitionLayer) {
+                gsap.to(transitionLayer, {
+                    opacity: 1,
+                    duration: 0.5,
+                    ease: "power2.inOut",
+                    onComplete: () => {
+                        window.location.href = href; 
+                    }
+                });
+            } else {
+                console.warn("Element #page-transition not found. Falling back to body animation.");
+                gsap.to("body", { 
+                    opacity: 0,
+                    duration: 0.4,
+                    ease: "power1.in",
+                    onComplete: () => {
+                        window.location.href = href;
+                    }
+                });
+            }
+        });
+    });
+    const pageTransitionLayer = document.getElementById('page-transition');
+    if (pageTransitionLayer) {
+        gsap.to(pageTransitionLayer, {
+            opacity: 0,
+            duration: 0.5,
+            delay: 0.2,
+            ease: "power2.out",
+            onComplete: () => {
+                pageTransitionLayer.style.pointerEvents = 'none';
+            }
+        });
+    }
+});
+</script>

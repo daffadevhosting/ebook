@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: page.lang | default: 'id-ID' }}">
+
+  {% include head.html %}
+
+  <body id="app" class="bg-zinc-950 text-zinc-100 font-mono min-h-screen flex flex-col">
+<div id="page-transition" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: black; opacity: 0; z-index: 9999; pointer-events: none;"></div>
+
+  {% include header.html %}
+
+    <!-- CONTENT -->
+    <main class="flex-grow px-6 py-0 max-w-4xl mx-auto w-full">
+      {{ content }}
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-zinc-700 py-4 px-2 text-xs text-zinc-500 text-center">
+      <p>© 2037 L Y Я A. Powered by Jekyll + Cloudflare + Kencleng Protocol™</p>
+    </footer>
+  {% include scriptGsap.html %}
+  </body>
+</html>
