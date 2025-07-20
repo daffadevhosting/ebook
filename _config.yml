@@ -8,8 +8,8 @@ description: >-
   Fragmen naratif dari masa depan, diretas dari memori yang seharusnya tidak pernah terbaca. 
   Cerita tentang manusia, mesin, dan batas tipis di antara keduanya.
 author: Ghostwriter v127.0.0.1
-baseurl: "/ebook" # the subpath of your site, e.g. /blog
-url: "https://daffadevhosting.github.io" # the base hostname & protocol for your site
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "" # the base hostname & protocol for your site
 
 # Markdown settings
 markdown: kramdown
