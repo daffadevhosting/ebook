@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Upload Cerita</title>
+  <script>
+    async function uploadBab(e) {
+      e.preventDefault();
+
+      const token = document.getElementById("token").value.trim();
+      const bab = document.getElementById("bab").value.trim();
+      const file = document.getElementById("file").files[0];
+
+      if (!token || !bab || !file) {
+        alert("Semua field harus diisi.");
+        return;
+      }
+
+      const content = await file.text();
+
+      const res = await fetch("/admin/upload-bab", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ bab, content })
+      });
+
+      const msg = await res.text();
+      alert(`${res.status} → ${msg}`);
+    }
+  </script>
+  <style>
+    body {
+      background: #111;
+      color: #eee;
+      font-family: monospace;
+      padding: 2rem;
+      max-width: 500px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      border: none;
+      background: #222;
+      color: #0ff;
+    }
+    button:hover {
+      background: #0ff;
+      color: #000;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛠️ Upload Bab Markdown</h1>
+  <form onsubmit="uploadBab(event)">
+    <label>Admin Token:
+      <input type="password" id="token" placeholder="your-secret-token" required />
+    </label>
+    <label>Nomor Bab:
+      <input type="number" id="bab" min="1" required />
+    </label>
+    <label>File Cerita (.md):
+      <input type="file" id="file" accept=".md" required />
+    </label>
+    <button type="submit">🚀 Upload</button>
+  </form>
+</body>
+</html>
