@@ -2,8 +2,8 @@
 {% assign current_bab = bab_number %}
 
 {% if bab_number > 5 %}
-  <img id="image-preview" src="" class="hidden rounded-lg mb-6 shadow-xl w-full max-h-60 object-cover backdrop-invert-100 max-w-3xl mx-auto" alt="Ilustrasi Bab" />
-  <pre id="chapter-content" class="prose overflow-auto whitespace-pre-wrap break-words prose-invert prose-pre:bg-zinc-900 prose-pre:text-green-400 prose-pre:rounded-md prose-pre:font-mono prose-pre:text-sm prose-pre:px-4 prose-pre:py-3 max-w-none leading-relaxed text-wrap hidden"></pre>
+<img id="image-preview" src="" class="hidden rounded-lg mb-6 shadow-xl w-full max-h-60 object-cover backdrop-invert-100 max-w-3xl mx-auto" alt="Ilustrasi Bab" />
+<pre id="chapter-content" class="prose overflow-auto whitespace-pre-wrap break-words prose-invert prose-pre:bg-zinc-900 prose-pre:text-green-400 prose-pre:rounded-md prose-pre:font-mono prose-pre:text-sm prose-pre:px-4 prose-pre:py-3 max-w-none leading-relaxed text-wrap hidden"></pre>
 <div id="locked-up" class="prose overflow-auto whitespace-pre-wrap break-words prose-invert prose-pre:bg-zinc-900 prose-pre:text-green-400 prose-pre:rounded-md prose-pre:font-mono prose-pre:text-sm prose-pre:px-4 prose-pre:py-3 max-w-none leading-relaxed text-wrap">
 <pre id="locked" class="bg-gray-900 rounded-md mb-2 p-2 text-wrap">
 <span class="text-red-500">LOCKED: Bab ini belum diaktifkan.</span>
@@ -117,20 +117,42 @@ async function loadBabContent() {
   }
 }
 
+function extractPromptFromMarkdown(markdown) {
+  const titleLine = markdown.split('\n').find(line => line.trim().startsWith('#')) || '';
+  const title = titleLine.replace(/^#+/, '').trim();
+
+  const bodyLines = markdown
+    .replace(/[`*>#\-\[\]]/g, '')  // strip simbol markdown
+    .split('\n')
+    .filter(l => l.trim().length > 30) // ambil kalimat cukup panjang
+    .slice(0, 5)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Bangun prompt AI
+  const prompt = `Ilustrasi sinematik sci-fi dari cerita berjudul "${title}". Situasi: ${bodyLines}`;
+
+  return prompt;
+}
+
 async function loadImagePreview() {
+  const imgEl = document.getElementById("image-preview");
+  if (!imgEl) return;
+
+  const isBab1 = currentBab === 1;
+  const force = isBab1 || pageLocked;
+
   try {
-    const imgEl = document.getElementById("image-preview");
-    const res = await fetch(`${API_URL}/generate-bab-image/${currentBab}`);
+    const res = await fetch(`${API_URL}/generate-bab-image/${currentBab}${force ? '?force=true' : ''}`);
     if (res.ok) {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       imgEl.src = url;
       imgEl.classList.remove("hidden");
-    } else {
-      console.warn("Gagal fetch gambar AI:", await res.text());
     }
   } catch (err) {
-    console.error("Gagal fetch AI image:", err);
+    console.error("Gagal ambil image:", err);
   }
 }
 
