@@ -3,7 +3,7 @@
 
   {% include head.html %}
 
-<body data-bab="{{ page.order }}" class="bg-zinc-950 text-zinc-100 font-mono px-6 py-8 max-w-4xl w-full mx-auto scroll-smooth selection:bg-cyan-400 selection:text-zinc-900">
+<body data-bab="{{ page.order | default: 1 }}" data-locked="{{ page.locked | default: false }}" class="bg-zinc-950 text-zinc-100 font-mono px-6 py-8 max-w-4xl w-full mx-auto scroll-smooth selection:bg-cyan-400 selection:text-zinc-900">
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const currentBab = parseInt(document.body.dataset.bab, 10);

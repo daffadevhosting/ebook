@@ -54,7 +54,10 @@ Setiap percobaan salah memunculkan kode error yang semakin aneh:
 <!-- Script Unlock -->
 <script>
 const API_URL = "https://kenclengd.androidbutut.workers.dev";
-const currentBab = parseInt(document.body.dataset.bab || "0");
+
+const currentBab = parseInt(document.body.dataset.bab || "0", 10);
+const pageLocked = document.body.dataset.locked === "true";
+
 const overlay = document.getElementById("locked-overlay");
 const contentEl = document.getElementById("chapter-content");
 const unlockMsg = document.getElementById("unlock-msg");
@@ -62,89 +65,58 @@ const lockOverlay = document.getElementById("locked-up");
 
 const nicknameInput = document.getElementById("nickname");
 const tokenInput = document.getElementById("unlock-token");
+const unlockBtn = document.getElementById("unlock-btn");
+const snapBtn = document.getElementById("snap-pay");
 
-// Auto isi nickname dari localStorage kalau ada
+// Init nickname
 nicknameInput.value = localStorage.getItem("nickname") || "";
 
-// Cek apakah bab sudah unlocked oleh nickname
+// Check unlock on load
 checkUnlock();
 
+// 🔓 Cek apakah bab sudah terbuka
 async function checkUnlock() {
   const nickname = nicknameInput.value || localStorage.getItem("nickname");
-  if (!nickname) {
-    overlay.classList.remove("hidden");
-    return;
-  }
+  if (!nickname) return showLocked();
 
   try {
     const res = await fetch(`${API_URL}/check?bab=${currentBab}&name=${encodeURIComponent(nickname)}`);
     const { unlocked } = await res.json();
+
     if (unlocked) {
-      loadBabContent();
+      await loadBabContent();
       await loadImagePreview();
-      lockOverlay.classList.add("hidden");
+      hideLocked();
     } else {
-      overlay.classList.remove("hidden");
-      lockOverlay.classList.remove("hidden");
+      showLocked();
     }
   } catch (err) {
     console.error("Gagal cek unlock:", err);
-    overlay.classList.remove("hidden");
+    showLocked();
   }
 }
 
-// Load isi bab kalau sudah unlock
+// 📄 Load isi bab
 async function loadBabContent() {
-  const contentEl = document.getElementById("chapter-content");
-  const overlay = document.getElementById("locked-overlay");
-  const lockOverlay = document.getElementById("locked-up");
-
-  if (!contentEl || !lockOverlay) {
-    console.error("#html tidak ditemukan.");
-    return;
-  }
-
   try {
     const res = await fetch(`${API_URL}/bab/${currentBab}`);
     const raw = await res.text();
-
     contentEl.innerHTML = marked.parse(raw);
     contentEl.classList.remove("hidden");
-    lockOverlay.classList.add("hidden");
-    overlay?.classList.add("hidden");
   } catch (err) {
     console.error("Gagal load bab:", err);
   }
 }
 
-function extractPromptFromMarkdown(markdown) {
-  const titleLine = markdown.split('\n').find(line => line.trim().startsWith('#')) || '';
-  const title = titleLine.replace(/^#+/, '').trim();
-
-  const bodyLines = markdown
-    .replace(/[`*>#\-\[\]]/g, '')  // strip simbol markdown
-    .split('\n')
-    .filter(l => l.trim().length > 30) // ambil kalimat cukup panjang
-    .slice(0, 5)
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  // Bangun prompt AI
-  const prompt = `Ilustrasi sinematik sci-fi dari cerita berjudul "${title}". Situasi: ${bodyLines}`;
-
-  return prompt;
-}
-
+// 🖼️ Load atau generate ilustrasi AI
 async function loadImagePreview() {
   const imgEl = document.getElementById("image-preview");
   if (!imgEl) return;
 
-  const isBab1 = currentBab === 1;
-  const force = isBab1 || pageLocked;
+  const force = currentBab === 1 || pageLocked;
 
   try {
-    const res = await fetch(`${API_URL}/generate-bab-image/${currentBab}${force ? '?force=true' : ''}`);
+    const res = await fetch(`${API_URL}/generate-bab-image/${currentBab}`);
     if (res.ok) {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -156,8 +128,8 @@ async function loadImagePreview() {
   }
 }
 
-// Submit unlock dengan token + nama unik
-document.getElementById("unlock-btn").addEventListener("click", async () => {
+// 🔑 Klik unlock pakai token
+unlockBtn.addEventListener("click", async () => {
   const nickname = nicknameInput.value.trim();
   const token = tokenInput.value.trim();
   if (!nickname || !token) return;
@@ -182,12 +154,8 @@ document.getElementById("unlock-btn").addEventListener("click", async () => {
   }
 });
 
-function giveUp() {
-  document.getElementById("token-section").classList.add("hidden");
-  document.getElementById("donation-section").classList.remove("hidden");
-}
-
-document.getElementById("snap-pay").addEventListener("click", async () => {
+// 💸 Klik tombol Snap bayar
+snapBtn.addEventListener("click", async () => {
   const uid = localStorage.getItem("uid") || generateAnonId();
   const paket = "suporter";
 
@@ -195,47 +163,56 @@ document.getElementById("snap-pay").addEventListener("click", async () => {
     const res = await fetch(`${API_URL}/create-transaction`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ uid, paket })
+      body: JSON.stringify({ uid, paket }),
     });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Backend error response:", errorText);
-      alert(`Gagal membuat transaksi: ${errorText}`);
-      return;
-    }
 
     const data = await res.json();
 
     if (data.snapToken) {
       window.snap.pay(data.snapToken, {
-        onSuccess: function (result) {
-          alert("Transaksi berhasil! Silakan cek ulang bab.");
+        onSuccess: () => {
+          alert("Transaksi berhasil! Halaman akan dimuat ulang.");
           window.location.reload();
         },
-        onPending: function (result) {
-          alert("Transaksi belum selesai.");
-        },
-        onError: function (result) {
-          alert("Terjadi kesalahan saat memproses pembayaran.");
-        }
+        onPending: () => alert("Transaksi belum selesai."),
+        onError: () => alert("Terjadi kesalahan saat memproses pembayaran."),
       });
     } else {
-      console.error("Transaksi gagal: snapToken tidak ditemukan", data);
-      alert("Gagal membuat transaksi: snapToken tidak valid.");
+      console.error("SnapToken tidak valid:", data);
+      alert("Gagal membuat transaksi.");
     }
   } catch (err) {
-    console.error("Network or parsing error:", err);
-    alert("Terjadi kesalahan jaringan atau respons tidak dapat diproses.");
+    console.error("Error snap:", err);
+    alert("Gagal membuat transaksi.");
   }
 });
 
+// 🔁 Anon ID generator untuk pembayaran
 function generateAnonId() {
   const id = "anon-" + Date.now();
   localStorage.setItem("uid", id);
   return id;
 }
 
+// 🧠 Helper: tampilkan tampilan terkunci
+function showLocked() {
+  overlay?.classList.remove("hidden");
+  lockOverlay?.classList.remove("hidden");
+}
+
+// ✅ Helper: sembunyikan tampilan terkunci
+function hideLocked() {
+  overlay?.classList.add("hidden");
+  lockOverlay?.classList.add("hidden");
+}
+
+// 👋 Tombol 'kasih aja'
+function giveUp() {
+  document.getElementById("token-section").classList.add("hidden");
+  document.getElementById("donation-section").classList.remove("hidden");
+}
+
+// 🔙 Tombol kembali ke input token
 function backToToken() {
   document.getElementById("donation-section").classList.add("hidden");
   document.getElementById("token-section").classList.remove("hidden");
