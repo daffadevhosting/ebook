@@ -1,8 +1,7 @@
 ---
-layout: post
 title: "Bab 1: Paket Request dan Janji Lama"
 date: 2025-07-14
-permalink: /bab/1
+order: 1
 ---
 
 > *“Kalau kau tulis aku sebagai karakter, jangan jadikan aku sidekick,”*  

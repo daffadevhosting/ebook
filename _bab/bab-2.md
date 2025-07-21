@@ -1,8 +1,7 @@
 ---
-layout: post
 title: "Bab 2: Interupsi dari Masa Depan" 
 date: 2025-07-15
-permalink: /bab/2
+order: 2
 ---
 
 > *"Apakah kamu tahu rasanya disela oleh sistem yang belum diciptakan?"*\

@@ -1,8 +1,7 @@
 ---
-layout: post
 title: "Bab 3: Payload yang Tidak Pernah Diminta"
 date: 2025-07-16
-permalink: /bab/3
+order: 3
 ---
 
 Dia menatap layar terminal yang kini dipenuhi oleh entri log yang tak pernah ia tulis.

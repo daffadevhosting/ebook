@@ -1,19 +1,18 @@
-{% assign bab_parts = page.title | split: " " %}
-{% assign bab_number = bab_parts[1] | plus: 0 %}
+{% assign bab_number = page.order | plus: 0 %}
 {% assign current_bab = bab_number %}
 
-{% if current_bab > 0 and current_bab > 5 and current_bab % 5 == 1 %}
+{% if bab_number > 5 %}
+  <img id="image-preview" src="" class="hidden rounded-lg mb-6 shadow-xl w-full max-h-60 object-cover backdrop-invert-100 max-w-3xl mx-auto" alt="Ilustrasi Bab" />
   <pre id="chapter-content" class="prose overflow-auto whitespace-pre-wrap break-words prose-invert prose-pre:bg-zinc-900 prose-pre:text-green-400 prose-pre:rounded-md prose-pre:font-mono prose-pre:text-sm prose-pre:px-4 prose-pre:py-3 max-w-none leading-relaxed text-wrap hidden"></pre>
 <div id="locked-up" class="prose overflow-auto whitespace-pre-wrap break-words prose-invert prose-pre:bg-zinc-900 prose-pre:text-green-400 prose-pre:rounded-md prose-pre:font-mono prose-pre:text-sm prose-pre:px-4 prose-pre:py-3 max-w-none leading-relaxed text-wrap">
 <pre id="locked" class="bg-gray-900 rounded-md mb-2 p-2 text-wrap">
-<p class="text-red-500">LOCKED: Bab ini belum diaktifkan.</p>
-<p class="text-green-600">daffa@kenclengd-Mint:~/token/access$ gunakan-token-verifikasi-untuk-membuka.</p>
+<span class="text-red-500">LOCKED: Bab ini belum diaktifkan.</span>
+<span class="text-green-600">daffa@kenclengd-Mint:~/token/access$ gunakan-token-verifikasi-untuk-membuka.</span>
 </pre>
 
 Ia mencoba mengetik sesuatu… apapun… `--force`, `--override`, bahkan `--help`. Tapi sistem hanya merespons dengan satu suara, berat dan familiar:
-
+---
 > "Untuk membuka fragmen ini, kamu harus mengingat sesuatu yang bukan milikmu."
-
 ---
 
 ```
@@ -32,7 +31,7 @@ Setiap percobaan salah memunculkan kode error yang semakin aneh:
 <!-- LOCK OVERLAY (JS-controlled) -->
 <div id="locked-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center hidden">
   <div class="text-center text-zinc-200 space-y-6">
-    <h1 class="text-2xl font-semibold">Buka Bab Terkunci</h1>
+    <h1 class="text-2xl font-semibold">Bab {{ bab_number }} Terkunci</h1>
     <div id="token-section">
       <p class="text-sm mb-2 text-zinc-400">Bikin nama unik dulu.</p>
       <input id="nickname" placeholder="--uniquename=[....]" class="px-4 py-2 my-4" />
@@ -55,7 +54,7 @@ Setiap percobaan salah memunculkan kode error yang semakin aneh:
 <!-- Script Unlock -->
 <script>
 const API_URL = "https://kenclengd.androidbutut.workers.dev";
-const currentBab = parseInt(location.pathname.match(/bab\/(\d+)/)?.[1] || "0");
+const currentBab = parseInt(document.body.dataset.bab || "0");
 const overlay = document.getElementById("locked-overlay");
 const contentEl = document.getElementById("chapter-content");
 const unlockMsg = document.getElementById("unlock-msg");
@@ -82,6 +81,7 @@ async function checkUnlock() {
     const { unlocked } = await res.json();
     if (unlocked) {
       loadBabContent();
+      await loadImagePreview();
       lockOverlay.classList.add("hidden");
     } else {
       overlay.classList.remove("hidden");
@@ -114,6 +114,23 @@ async function loadBabContent() {
     overlay?.classList.add("hidden");
   } catch (err) {
     console.error("Gagal load bab:", err);
+  }
+}
+
+async function loadImagePreview() {
+  try {
+    const imgEl = document.getElementById("image-preview");
+    const res = await fetch(`${API_URL}/generate-bab-image/${currentBab}`);
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      imgEl.src = url;
+      imgEl.classList.remove("hidden");
+    } else {
+      console.warn("Gagal fetch gambar AI:", await res.text());
+    }
+  } catch (err) {
+    console.error("Gagal fetch AI image:", err);
   }
 }
 

@@ -1,0 +1,70 @@
+---
+layout: default
+title: Nuhun Pisan Lurr!
+permalink: /nuhun-lurr
+---
+
+<section class="min-h-screen rounded-4xl flex flex-col justify-center items-center text-center bg-zinc-950 text-zinc-100 font-mono px-6 py-10 relative overflow-hidden">
+  <!-- Glowing background aura -->
+  <div class="absolute inset-0 z-0 pointer-events-none">
+    <div class="absolute top-[-20%] left-[-20%] w-[400px] h-[400px] bg-green-400/20 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-amber-400/20 rounded-full blur-2xl animate-ping"></div>
+  </div>
+
+  <!-- Content -->
+  <div class="z-10 max-w-2xl">
+    <h1 class="text-4xl md:text-5xl font-bold text-green-400 tracking-wide mb-6 animate-fade-in-up">
+      <i class="fa-solid fa-circle-check text-5xl"></i> Transaksi Berhasil!
+    </h1>
+    <p class="text-lg text-zinc-300 leading-relaxed animate-fade-in-up delay-200">
+      Kamu resmi menjadi <span class="text-yellow-400 font-semibold">Suporter Resmi Kenclengd™</span>.
+      Fragmen waktu sudah terbuka untukmu. Cerita tak lagi akan tertahan.
+    </p>
+
+    <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-300">
+      <a href="{{site.baseurl}}//" class="px-6 py-3 rounded bg-green-600 hover:bg-green-500 text-white font-semibold shadow transition duration-300">
+        <i class="fa-solid fa-backward"></i> Kembali ke Beranda
+      </a>
+      <a href="{{site.baseurl}}/" class="px-6 py-3 rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold shadow transition duration-300">
+        <i class="fa-solid fa-book-open-reader"></i> Lanjutkan Membaca
+      </a>
+    </div>
+
+    <p class="mt-10 text-xs text-zinc-500 animate-fade-in-up delay-500">
+      Jika halaman tidak otomatis redirect, silakan klik tombol di atas. Terima kasih atas dukunganmu!
+    </p>
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    window.location.href = "./";
+  }, 5000); // redirect otomatis dalam 5 detik
+});
+</script>
+
+<style>
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out both;
+}
+.delay-200 {
+  animation-delay: 0.2s;
+}
+.delay-300 {
+  animation-delay: 0.3s;
+}
+.delay-500 {
+  animation-delay: 0.5s;
+}
+</style>

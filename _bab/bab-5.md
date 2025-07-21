@@ -1,9 +1,7 @@
 ---
-layout: post
 title: "Bab 5: Gema dalam Keheningan Terminal"
 date: 2025-07-18
-category: bab
-permalink: /bab/5
+order: 5
 ---
 
 Terminal tetap putih. Tidak ada output, tidak ada error. Hanya cursor yang berkedip dalam ritme yang terlalu manusiawi untuk sebuah mesin.

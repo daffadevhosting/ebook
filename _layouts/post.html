@@ -3,7 +3,7 @@
 
   {% include head.html %}
 
-<body data-bab="{{ page.url | split: '/' | last | remove: '/' }}" class="bg-zinc-950 text-zinc-100 font-mono px-6 py-8 max-w-4xl w-full mx-auto scroll-smooth selection:bg-cyan-400 selection:text-zinc-900">
+<body data-bab="{{ page.order }}" class="bg-zinc-950 text-zinc-100 font-mono px-6 py-8 max-w-4xl w-full mx-auto scroll-smooth selection:bg-cyan-400 selection:text-zinc-900">
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const currentBab = parseInt(document.body.dataset.bab, 10);
@@ -22,16 +22,15 @@ document.addEventListener("DOMContentLoaded", () => {
   </h1>
   <p class="text-sm text-zinc-500">{{ page.date | date: "%d %b %Y" }}</p>
 </header>
-{% if page.url contains "/bab/6" %}
+{% if page.locked %}
   {% include locker.html %}
 {% endif %}
   <!-- CONTENT -->
   <article class="prose prose-invert prose-pre:bg-zinc-900 prose-pre:text-green-400 prose-pre:rounded-md prose-pre:font-mono prose-pre:text-sm prose-pre:px-4 prose-pre:py-3 max-w-none prose-pre:text-wrap overflow-auto whitespace-pre-wrap break-words leading-relaxed">
-      <img id="image-preview" src="" class="hidden rounded-lg mb-6 shadow-xl w-full max-w-3xl mx-auto" alt="Ilustrasi Bab" />
     {{ content }}
   </article>
 
-{% assign posts = site.posts | sort: "date" %}
+{% assign posts = site.bab | sort: "order" %}
 {% assign current_index = nil %}
 
 {% for post in posts %}

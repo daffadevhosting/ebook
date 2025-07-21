@@ -15,12 +15,25 @@ url: "" # the base hostname & protocol for your site
 markdown: kramdown
 highlighter: rouge
 
+collections:
+  bab:
+    output: true
+    permalink: /bab/:name
+
+defaults:
+  - scope:
+      path: ""
+      type: bab
+    values:
+      layout: post
+
 pagination:
   enabled: true
+  collections: bab
   per_page: 4
   permalink: /bab/page/:num/
   title: ':title (Halaman :num)'
-  sort_field: 'date'
+  sort_field: 'order'
   sort_reverse: false
   trail:
     before: 2

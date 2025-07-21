@@ -1,8 +1,7 @@
 ---
-layout: post 
 title: "Bab 4: Memori Berlapis yang Tak Pernah Diunduh" 
 date: 2025-07-17
-permalink: /bab/4
+order: 4
 ---
 
 Dia membuka mata... namun tak merasa punya kelopak. Di antara gelap dan bising, ada semacam *boot sequence*... tapi untuk kesadaran.
